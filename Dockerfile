@@ -60,9 +60,15 @@ RUN apt-get update && apt-get install -y \
 # Clear out the local repository of retrieved package files
 RUN apt-get clean
 
+# semaphore functions are now available
+RUN docker-php-ext-install sysvmsg sysvsem sysvshm
+
+# Shared Memory
+RUN docker-php-ext-install shmop
+
 # Install needed PHP Extensions
 RUN docker-php-ext-configure intl
-RUN docker-php-ext-install intl soap pcntl pspell enchant gettext exif calendar simplexml wddx opcache sysvmsg sysvsem sysvshm shmop pdo_mysql zip bcmath sockets
+RUN docker-php-ext-install intl soap pcntl pspell enchant gettext exif calendar simplexml wddx opcache pdo_mysql zip bcmath sockets
 
 # Install needed PECL extensions
 RUN pecl config-set php_ini "${PHP_INI_DIR}/php.ini"
@@ -79,9 +85,15 @@ RUN pecl install -o -f redis \
 
 # Install Xdebug
 RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+# Sync
+RUN pecl install sync
+
+# Parallel
 RUN pecl install parallel && echo "extension=parallel.so" > /usr/local/etc/php/conf.d/docker-php-ext-parallel.ini
 
 # './configure'  '--build=x86_64-linux-gnu' '--with-config-file-path=/usr/local/etc/php' '--with-config-file-scan-dir=/usr/local/etc/php/conf.d' '--enable-option-checking=fatal' '--with-mhash' '--with-pic' '--enable-ftp' '--enable-mbstring' '--enable-mysqlnd' '--with-password-argon2' '--with-sodium=shared' '--with-pdo-sqlite=/usr' '--with-sqlite3=/usr' '--with-curl' '--with-libedit' '--with-openssl' '--with-zlib' '--with-libdir=lib/x86_64-linux-gnu' '--enable-maintainer-zts' '--disable-cgi' 'build_alias=x86_64-linux-gnu'
+# pthreads
 RUN debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
     curdir=`pwd` && phpConfig=`which php-config` && cd /tmp && git clone https://github.com/krakjoe/pthreads.git && \
     cd pthreads && phpize && \
